@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Entrada y Salida de Vehículos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        input {
+            margin-bottom: 20px;
+            padding: 10px;
+            width: 80%;
+            font-size: 16px;
+        }
+        #qr-video {
+            width: 80%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Control de Entrada y Salida de Vehículos</h1>
+
+<form id="vehiculoForm">
+    <input type="text" id="placa" name="placa" placeholder="Ingrese la placa del vehículo" required>
+    <br>
+    <input type="hidden" id="qr_code" name="qr_code">
+    <br>
+    <video id="qr-video"></video>
+    <br>
+    <button type="submit">Registrar Entrada/Salida</button>
+</form>
+
+<div id="resultado"></div>
+
+<script src="https://unpkg.com/@zxing/library@latest"></script>
+<script>
+    const codeReader = new ZXing.BrowserQRCodeReader();
+    const qrCodeInput = document.getElementById('qr_code');
+
+    codeReader.decodeFromVideoDevice(null, 'qr-video', (result, err) => {
+        if (result) {
+            qrCodeInput.value = result.text;
+            codeReader.reset();
+        }
+    });
+
+    document.getElementById('vehiculoForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+
+        fetch('registro.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('resultado').innerText = data;
+            document.getElementById('vehiculoForm').reset();
+        })
+        .catch(error => console.error('Error:', error));
+    });
+</script>
+
+</body>
+</html>
